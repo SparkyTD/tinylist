@@ -1,5 +1,7 @@
 package com.firestormsw.tinylist.viewmodel
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -19,7 +21,8 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
     val uiState: StateFlow<ShoppingListState> = _uiState.asStateFlow()
 
     private var pendingMoveJob: Job? = null
-    private val pendingCheckedItems = mutableSetOf<String>()
+    private val _pendingCheckedItems = mutableStateOf<Set<String>>(emptySet())
+    val pendingCheckedItems: State<Set<String>> = _pendingCheckedItems
 
     init {
         // Sample data
@@ -73,69 +76,37 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                 ?.find { it.id == itemId }
 
             if (currentItem?.isChecked == false) {
-                pendingCheckedItems.add(itemId)
+                _pendingCheckedItems.apply { _pendingCheckedItems.value += itemId }
+                setItemCheckedState(listId, itemId, true)
+
                 pendingMoveJob?.cancel()
                 pendingMoveJob = viewModelScope.launch {
                     delay(800)
-
-                    _uiState.update { state ->
-                        val updatedLists = state.lists.map { list ->
-                            if (list.id == listId) {
-                                list.copy(
-                                    items = list.items.map { item ->
-                                        if (item.id in pendingCheckedItems) {
-                                            item.copy(isDelayedAfterChecked = false)
-                                        } else item
-                                    }
-                                )
-                            } else list
-                        }
-                        state.copy(
-                            lists = updatedLists,
-                            animatingItemIds = state.animatingItemIds - itemId
-                        )
-                    }
-                }
-
-                _uiState.update { state ->
-                    val updatedLists = state.lists.map { list ->
-                        if (list.id == listId) {
-                            list.copy(
-                                items = list.items.map { item ->
-                                    if (item.id == itemId) {
-                                        item.copy(
-                                            isChecked = true,
-                                            isDelayedAfterChecked = true
-                                        )
-                                    } else item
-                                }
-                            )
-                        } else list
-                    }
-                    state.copy(
-                        lists = updatedLists,
-                        animatingItemIds = state.animatingItemIds - itemId
-                    )
+                    setItemCheckedState(listId, itemId, true)
+                    _pendingCheckedItems.apply { _pendingCheckedItems.value = emptySet() }
                 }
             } else {
-                _uiState.update { state ->
-                    val updatedLists = state.lists.map { list ->
-                        if (list.id == listId) {
-                            list.copy(
-                                items = list.items.map { item ->
-                                    if (item.id == itemId) {
-                                        item.copy(isChecked = false)
-                                    } else item
-                                }
-                            )
-                        } else list
-                    }
-                    state.copy(
-                        lists = updatedLists,
-                        animatingItemIds = state.animatingItemIds - itemId
-                    )
-                }
+                setItemCheckedState(listId, itemId, false)
             }
+        }
+    }
+
+    private fun setItemCheckedState(listId: String, itemId: String, checked: Boolean) {
+        _uiState.update { state ->
+            val updatedLists = state.lists.map { list ->
+                if (list.id == listId) {
+                    list.copy(
+                        items = list.items.map { item ->
+                            if (item.id == itemId) {
+                                item.copy(isChecked = checked)
+                            } else item
+                        }
+                    )
+                } else list
+            }
+            state.copy(
+                lists = updatedLists,
+            )
         }
     }
 
@@ -185,7 +156,6 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
 data class ShoppingListState(
     val lists: List<ShoppingList> = emptyList(),
     val selectedListId: String = "",
-    val animatingItemIds: Set<String> = emptySet(),
     val isAddItemSheetOpen: Boolean = false,
     val isCreateListSheetOpen: Boolean = false,
 )

@@ -171,8 +171,7 @@ fun AddItemSheet(
                                     text = itemText,
                                     isChecked = false,
                                     quantity = itemQuantity,
-                                    unit = itemUnit,
-                                    isDelayedAfterChecked = false
+                                    unit = itemUnit
                                 )
                             )
                         },

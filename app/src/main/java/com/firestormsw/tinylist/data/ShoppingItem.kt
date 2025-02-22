@@ -7,6 +7,5 @@ data class ShoppingItem(
     val text: String,
     val isChecked: Boolean = false,
     val quantity: Int? = null,
-    val unit: String = "",
-    val isDelayedAfterChecked: Boolean = false
+    val unit: String = ""
 )

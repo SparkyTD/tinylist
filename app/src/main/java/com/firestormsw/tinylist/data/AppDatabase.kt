@@ -10,7 +10,7 @@ import com.firestormsw.tinylist.data.entities.ShoppingListEntity
 
 @Database(
     entities = [ShoppingListEntity::class, ShoppingItemEntity::class],
-    version = 2
+    version = 3
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun shoppingDao(): ShoppingDao

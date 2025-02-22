@@ -7,52 +7,114 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class ShoppingRepository(private val shoppingDao: ShoppingDao) {
-    val allShoppingLists: Flow<List<ShoppingList>> = shoppingDao.getShoppingListsWithItems()
+    // Domain model to entity conversions
+    private fun ShoppingList.toEntity() = ShoppingListEntity(
+        id = id,
+        name = name
+    )
+
+    private fun ShoppingItem.toEntity(listId: String) = ShoppingItemEntity(
+        id = id,
+        listId = listId,
+        text = text,
+        quantity = quantity,
+        unit = unit,
+        isChecked = isChecked
+    )
+
+    private fun ShoppingListEntity.toDomain(items: List<ShoppingItemEntity> = emptyList()) = ShoppingList(
+        id = id,
+        name = name,
+        items = items.map { it.toDomain() }
+    )
+
+    private fun ShoppingItemEntity.toDomain() = ShoppingItem(
+        id = id,
+        text = text,
+        quantity = quantity,
+        unit = unit,
+        isChecked = isChecked
+    )
+
+    // Shopping List Operations
+    fun getAllLists(): Flow<List<ShoppingList>> = shoppingDao.getAllLists()
         .map { lists ->
-            lists.map { listWithItems ->
-                ShoppingList(
-                    id = listWithItems.list.id,
-                    name = listWithItems.list.name,
-                    items = listWithItems.items.map { item ->
-                        ShoppingItem(
-                            id = item.id,
-                            text = item.text,
-                            isChecked = item.isChecked,
-                            quantity = item.quantity,
-                            unit = item.unit,
-                            isDelayedAfterChecked = false
-                        )
-                    }
-                )
+            lists.map { list ->
+                list.toDomain()
             }
         }
 
-    suspend fun insertShoppingList(shoppingList: ShoppingList) {
-        shoppingDao.insertShoppingList(
-            ShoppingListEntity(
-                id = shoppingList.id,
-                name = shoppingList.name
-            )
-        )
-        shoppingDao.insertShoppingItems(
-            shoppingList.items.map { item ->
-                ShoppingItemEntity(
-                    id = item.id,
-                    listId = shoppingList.id,
-                    text = item.text,
-                    quantity = item.quantity,
-                    unit = item.unit,
-                    isChecked = item.isChecked
-                )
+    fun getListById(listId: String): Flow<ShoppingList?> = shoppingDao.getListWithItems(listId)
+        .map { listWithItems ->
+            listWithItems?.let {
+                it.list.toDomain(it.items)
             }
+        }
+
+    suspend fun createList(list: ShoppingList) {
+        shoppingDao.insertList(list.toEntity())
+    }
+
+    suspend fun updateList(list: ShoppingList) {
+        shoppingDao.updateList(list.toEntity())
+    }
+
+    suspend fun deleteList(listId: String) {
+        shoppingDao.deleteListById(listId)
+    }
+
+    // Shopping Item Operations
+    fun getItemsForList(listId: String): Flow<List<ShoppingItem>> =
+        shoppingDao.getItemsForList(listId)
+            .map { items -> items.map { it.toDomain() } }
+
+    suspend fun addItemToList(listId: String, item: ShoppingItem) {
+        shoppingDao.insertItem(item.toEntity(listId))
+    }
+
+    suspend fun addItemsToList(listId: String, items: List<ShoppingItem>) {
+        shoppingDao.insertItems(items.map { it.toEntity(listId) })
+    }
+
+    suspend fun updateItem(listId: String, item: ShoppingItem) {
+        shoppingDao.updateItem(item.toEntity(listId))
+    }
+
+    suspend fun deleteItem(itemId: String) {
+        shoppingDao.deleteItemById(itemId)
+    }
+
+    suspend fun toggleItemChecked(itemId: String) {
+        val item = shoppingDao.getItemByIdOnce(itemId) ?: return
+        shoppingDao.updateItemCheckedStatus(itemId, !item.isChecked)
+    }
+
+    suspend fun updateItemQuantity(itemId: String, quantity: Int?) {
+        shoppingDao.updateItemQuantity(itemId, quantity)
+    }
+
+    suspend fun updateItemUnit(itemId: String, unit: String) {
+        shoppingDao.updateItemUnit(itemId, unit)
+    }
+
+    // List Management Operations
+    suspend fun createListWithItems(list: ShoppingList) {
+        shoppingDao.insertListWithItems(
+            list = list.toEntity(),
+            items = list.items.map { it.toEntity(list.id) }
         )
     }
 
-    suspend fun updateItemCheckedStatus(itemId: String, isChecked: Boolean) {
-        shoppingDao.updateItemCheckedStatus(itemId, isChecked)
+    suspend fun clearCheckedItems(listId: String) {
+        shoppingDao.deleteCheckedItems(listId)
     }
 
     suspend fun uncheckAllItems(listId: String) {
         shoppingDao.uncheckAllItems(listId)
     }
+
+    // Statistics
+    fun getItemCount(listId: String): Flow<Int> = shoppingDao.getItemCount(listId)
+
+    fun getCheckedItemCount(listId: String): Flow<Int> = shoppingDao.getCheckedItemCount(listId)
 }

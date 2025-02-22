@@ -1,5 +1,6 @@
 package com.firestormsw.tinylist.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -9,19 +10,23 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.firestormsw.tinylist.data.ShoppingItem
+import com.firestormsw.tinylist.viewmodel.ShoppingListViewModel
 
 @Composable
 fun ShoppingItems(
     items: List<ShoppingItem>,
+    viewModel: ShoppingListViewModel,
     onItemClick: (String) -> Unit,
     onUncheckAllClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val pendingCheckedItemIds by viewModel.pendingCheckedItems
     val (checkedItems, uncheckedItems) = items.partition { item ->
-        item.isChecked && !item.isDelayedAfterChecked
+        item.isChecked && item.id !in pendingCheckedItemIds
     }
 
     LazyColumn(

@@ -80,6 +80,7 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 ShoppingItems(
                                     items = list.items,
+                                    viewModel = viewModel,
                                     onItemClick = { itemId ->
                                         viewModel.toggleItem(list.id, itemId)
                                     },
