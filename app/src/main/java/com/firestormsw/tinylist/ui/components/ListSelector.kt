@@ -20,6 +20,7 @@ fun ListSelector(
     lists: List<ShoppingList>,
     selectedListId: String,
     onListSelected: (String) -> Unit,
+    onPromptCreateList: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyRow(
@@ -47,7 +48,7 @@ fun ListSelector(
         item {
             FilterChip(
                 selected = true,
-                onClick = { /* todo */ },
+                onClick = onPromptCreateList,
                 label = { Text("+ Add") },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer

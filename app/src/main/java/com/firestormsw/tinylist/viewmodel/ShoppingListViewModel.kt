@@ -1,19 +1,22 @@
-package com.firestormsw.tinylist.ui.viewmodel
+package com.firestormsw.tinylist.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.firestormsw.tinylist.data.ShoppingItem
 import com.firestormsw.tinylist.data.ShoppingList
+import com.firestormsw.tinylist.data.ShoppingRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ShoppingListViewModel : ViewModel() {
+class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(ShoppingListState())
-    val uiState: StateFlow<ShoppingListState> = _uiState
+    val uiState: StateFlow<ShoppingListState> = _uiState.asStateFlow()
 
     private var pendingMoveJob: Job? = null
     private val pendingCheckedItems = mutableSetOf<String>()
@@ -50,22 +53,6 @@ class ShoppingListViewModel : ViewModel() {
                     ShoppingItem("5", "Paint"),
                     ShoppingItem("6", "Brushes")
                 )
-            ),
-            ShoppingList(
-                id = "3",
-                name = "Other"
-            ),
-            ShoppingList(
-                id = "4",
-                name = "Stuff"
-            ),
-            ShoppingList(
-                id = "5",
-                name = "Padding"
-            ),
-            ShoppingList(
-                id = "6",
-                name = "More"
             ),
         )
         _uiState.value = ShoppingListState(
@@ -166,10 +153,39 @@ class ShoppingListViewModel : ViewModel() {
             state.copy(lists = updatedLists)
         }
     }
+
+    fun openAddItemSheet() {
+        _uiState.update { it.copy(isAddItemSheetOpen = true) }
+    }
+
+    fun closeAddItemSheet() {
+        _uiState.update { it.copy(isAddItemSheetOpen = false) }
+    }
+
+    fun openCreateListSheet() {
+        _uiState.update { it.copy(isCreateListSheetOpen = true) }
+    }
+
+    fun closeCreateListSheet() {
+        _uiState.update { it.copy(isCreateListSheetOpen = false) }
+    }
+
+    companion object {
+        fun provideFactory(
+            repository: ShoppingRepository
+        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return ShoppingListViewModel(repository) as T
+            }
+        }
+    }
 }
 
 data class ShoppingListState(
     val lists: List<ShoppingList> = emptyList(),
     val selectedListId: String = "",
-    val animatingItemIds: Set<String> = emptySet()
+    val animatingItemIds: Set<String> = emptySet(),
+    val isAddItemSheetOpen: Boolean = false,
+    val isCreateListSheetOpen: Boolean = false,
 )
