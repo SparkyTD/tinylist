@@ -80,7 +80,7 @@ fun ListSelector(
                             detectTapGestures(onLongPress = { offset ->
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                                targetList = list;
+                                targetList = list
                                 menuOffset = DpOffset(
                                     offset.x.toDp(),
                                     offset.y.toDp()
@@ -95,9 +95,9 @@ fun ListSelector(
         }
         item {
             FilterChip(
-                selected = false,
+                selected = true,
                 onClick = onPromptCreateList,
-                leadingIcon = { Icon(Add, contentDescription = "") },
+                leadingIcon = { Icon(Add, contentDescription = "Create new list") },
                 label = { Text("Add") },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer

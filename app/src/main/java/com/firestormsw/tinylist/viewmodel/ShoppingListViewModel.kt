@@ -1,6 +1,5 @@
 package com.firestormsw.tinylist.viewmodel
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -158,6 +157,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
         _uiState.update {
             it.copy(
                 selectedListId = newList.id,
+                lists = it.lists + newList,
                 editList = null,
             )
         }
@@ -167,12 +167,24 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
 
     fun addNewItem(listId: String, text: String, quantity: Int? = null, unit: String = "") {
         viewModelScope.launch {
-            val targetList = _uiState.value.lists.find {
+            var targetList = _uiState.value.lists.find {
                 it.id == listId
             }
 
+            var actualListId = listId
+
             if (targetList == null) {
-                return@launch
+                targetList = ShoppingList(name = "Default")
+                repository.createList(targetList)
+
+                actualListId = targetList.id
+                _uiState.update {
+                    it.copy(
+                        selectedListId = targetList.id,
+                        lists = it.lists + targetList,
+                        editList = null
+                    )
+                }
             }
 
             val existingItem = targetList.items.find {
@@ -185,12 +197,12 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                     quantity = quantity,
                     unit = unit
                 )
-                repository.addItemToList(listId, newItem)
+                repository.addItemToList(actualListId, newItem)
 
                 // Update UI state immediately
                 _uiState.update { state ->
                     val updatedLists = state.lists.map { list ->
-                        if (list.id == listId) {
+                        if (list.id == actualListId) {
                             list.copy(items = list.items + newItem)
                         } else list
                     }
@@ -201,7 +213,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                     )
                 }
             } else {
-                updateItem(listId, existingItem.id, text, quantity, unit)
+                updateItem(actualListId, existingItem.id, text, quantity, unit)
             }
         }
     }
@@ -255,7 +267,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                 .find { it.id == listId }
                 ?.items
                 ?.find { it.id == itemId }
-            val itemName = currentItem?.text;
+            val itemName = currentItem?.text
 
             _uiState.update { state ->
                 val updatedLists = state.lists.map { list ->
@@ -268,7 +280,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                     isAddItemSheetOpen = false,
                     snackbarMessage = "\"$itemName\" was deleted",
                     snackbarAction = {
-                        val item = currentItem!!;
+                        val item = currentItem!!
                         addNewItem(listId, item.text, item.quantity, item.unit)
                     },
                     lastDeletedItemForUndo = currentItem
@@ -300,8 +312,8 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
             repository.deleteList(listId)
 
             val currentList = _uiState.value.lists
-                .find { it.id == listId }!!;
-            val itemName = currentList.name;
+                .find { it.id == listId }!!
+            val itemName = currentList.name
 
             _uiState.update { state ->
                 val updatedLists = state.lists.filter { list ->
@@ -342,6 +354,12 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
 
     fun getEditList(): ShoppingList? {
         return _uiState.value.editList
+    }
+
+    fun getCurrentList(): ShoppingList? {
+        return _uiState.value.lists.find {
+            it.id == _uiState.value.selectedListId
+        }
     }
 
     companion object {

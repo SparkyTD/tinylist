@@ -13,8 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.FloatingActionButtonElevation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -30,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -84,7 +83,7 @@ class MainActivity : ComponentActivity() {
                     Scaffold(
                         modifier = Modifier.fillMaxSize(),
                         topBar = {
-                            Surface(shadowElevation = 3.dp) {
+                            Surface(shadowElevation = 0.dp) {
                                 Column(
                                     modifier = Modifier.statusBarsPadding()
                                 ) {
@@ -166,8 +165,8 @@ class MainActivity : ComponentActivity() {
                         isOpen = state.isAddItemSheetOpen,
                         onDismiss = viewModel::closeAddItemSheet,
                         onSave = {
-                            val editItem = viewModel.getEditItem();
-                            val editItemListId = viewModel.getEditItemListId();
+                            val editItem = viewModel.getEditItem()
+                            val editItemListId = viewModel.getEditItemListId()
                             if (editItem == null) {
                                 viewModel.addNewItem(
                                     state.selectedListId,
@@ -193,7 +192,7 @@ class MainActivity : ComponentActivity() {
                         isOpen = state.isCreateListSheetOpen,
                         onDismiss = viewModel::closeCreateListSheet,
                         onSave = {
-                            val editList = viewModel.getEditList();
+                            val editList = viewModel.getEditList()
                             if (editList == null) {
                                 viewModel.addNewList(it.name)
                                 viewModel.closeCreateListSheet()
@@ -204,6 +203,18 @@ class MainActivity : ComponentActivity() {
                         },
                         editList = viewModel.getEditList()
                     )
+
+                    if (viewModel.getCurrentList() == null) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "Start by adding a new list",
+                                color = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        }
+                    }
                 }
             }
         }
