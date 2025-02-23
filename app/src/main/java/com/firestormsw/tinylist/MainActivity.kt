@@ -11,12 +11,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,8 +56,29 @@ class MainActivity : ComponentActivity() {
                 val state by viewModel.uiState.collectAsState()
 
                 val selectedList = state.lists.find { it.id == state.selectedListId }
+                val snackbarHostState = remember { SnackbarHostState() }
 
                 Box(modifier = Modifier.fillMaxSize()) {
+                    LaunchedEffect(state.snackbarMessage) {
+                        if (state.snackbarMessage != null) {
+                            val result = snackbarHostState.showSnackbar(
+                                message = state.snackbarMessage!!,
+                                actionLabel = "Undo",
+                                duration = SnackbarDuration.Short
+                            )
+
+                            when (result) {
+                                SnackbarResult.ActionPerformed -> {
+                                    state.snackbarAction?.invoke()
+                                }
+
+                                SnackbarResult.Dismissed -> {
+                                    viewModel.clearSnackbar()
+                                }
+                            }
+                        }
+                    }
+
                     Scaffold(
                         modifier = Modifier.fillMaxSize(),
                         topBar = {
@@ -66,9 +98,31 @@ class MainActivity : ComponentActivity() {
                         },
                         floatingActionButton = {
                             FloatingActionButton(
-                                onClick = viewModel::openAddItemSheet
+                                onClick = viewModel::openAddItemSheet,
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = "Add item")
+                            }
+                        },
+                        snackbarHost = {
+                            SnackbarHost(
+                                hostState = snackbarHostState,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            ) { data ->
+                                Snackbar(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    action = {
+                                        TextButton(
+                                            onClick = { data.performAction() },
+                                            colors = ButtonDefaults.textButtonColors(
+                                                contentColor = MaterialTheme.colorScheme.inversePrimary
+                                            )
+                                        ) {
+                                            Text(data.visuals.actionLabel ?: "")
+                                        }
+                                    }
+                                ) {
+                                    Text(data.visuals.message)
+                                }
                             }
                         }
                     ) { innerPadding ->
@@ -87,6 +141,12 @@ class MainActivity : ComponentActivity() {
                                     onUncheckAllClick = {
                                         viewModel.uncheckAllItems(list.id)
                                     },
+                                    onPromptEditItem = { item ->
+                                        viewModel.openEditItemSheet(list.id, item)
+                                    },
+                                    onPromptDeleteItem = { item ->
+                                        viewModel.deleteItemById(list.id, item.id)
+                                    },
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }
@@ -97,16 +157,34 @@ class MainActivity : ComponentActivity() {
                         isOpen = state.isAddItemSheetOpen,
                         onDismiss = viewModel::closeAddItemSheet,
                         onSave = {
-                            // todo save item to repository
+                            val editItem = viewModel.getEditItem();
+                            val editItemListId = viewModel.getEditItemListId();
+                            if (editItem == null) {
+                                viewModel.addNewItem(
+                                    state.selectedListId,
+                                    it.text,
+                                    it.quantity,
+                                    it.unit
+                                )
+                            } else {
+                                viewModel.updateItem(
+                                    listId = editItemListId!!,
+                                    itemId = editItem.id,
+                                    text = it.text,
+                                    quantity = it.quantity,
+                                    unit = it.unit
+                                )
+                            }
                             viewModel.closeAddItemSheet()
-                        }
+                        },
+                        editItem = viewModel.getEditItem()
                     )
 
                     AddListSheet(
                         isOpen = state.isCreateListSheetOpen,
                         onDismiss = viewModel::closeCreateListSheet,
                         onSave = {
-                            // todo save list to repository
+                            viewModel.addNewList(it.name)
                             viewModel.closeCreateListSheet()
                         }
                     )

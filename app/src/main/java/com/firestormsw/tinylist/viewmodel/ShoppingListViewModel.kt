@@ -1,5 +1,6 @@
 package com.firestormsw.tinylist.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -25,43 +26,19 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
     val pendingCheckedItems: State<Set<String>> = _pendingCheckedItems
 
     init {
-        // Sample data
-        val sampleLists = listOf(
-            ShoppingList(
-                id = "groceries",
-                name = "Groceries",
-                items = listOf(
-                    ShoppingItem("1", "Ramen"),
-                    ShoppingItem("2", "Chips"),
-                    ShoppingItem("3", "Gummies"),
-                    ShoppingItem("4", "Nutella"),
-                    ShoppingItem("5", "Pop corn"),
-                    ShoppingItem("6", "Strongbow"),
-                    ShoppingItem("7", "Peanut Butter"),
-                    ShoppingItem("8", "Bacon"),
-                    ShoppingItem("9", "Ham"),
-                    ShoppingItem("10", "Spicy Sausage"),
-                    ShoppingItem("11", "Alpro"),
-                    ShoppingItem("12", "Coke"),
-                    ShoppingItem("13", "Water"),
-                    ShoppingItem("14", "Banana"),
-                    ShoppingItem("15", "Lemon"),
-                )
-            ),
-            ShoppingList(
-                id = "hardware",
-                name = "Hardware",
-                items = listOf(
-                    ShoppingItem("4", "Screws"),
-                    ShoppingItem("5", "Paint"),
-                    ShoppingItem("6", "Brushes")
-                )
-            ),
-        )
-        _uiState.value = ShoppingListState(
-            lists = sampleLists,
-            selectedListId = sampleLists.first().id
-        )
+        // Load lists from database
+        viewModelScope.launch {
+            repository.getAllLists().collect { lists ->
+                if (lists.isNotEmpty()) {
+                    _uiState.update { state ->
+                        state.copy(
+                            lists = lists,
+                            selectedListId = state.selectedListId.ifEmpty { lists.first().id }
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun selectList(id: String) {
@@ -76,17 +53,25 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                 ?.find { it.id == itemId }
 
             if (currentItem?.isChecked == false) {
-                _pendingCheckedItems.apply { _pendingCheckedItems.value += itemId }
+                // Update the database immediately
+                repository.toggleItemChecked(itemId)
+
+                // Add to pending items first for immediate UI feedback
+                _pendingCheckedItems.value += itemId
+
+                // Update UI state immediately
                 setItemCheckedState(listId, itemId, true)
 
+                // Schedule the delayed confirmation
                 pendingMoveJob?.cancel()
                 pendingMoveJob = viewModelScope.launch {
                     delay(800)
-                    setItemCheckedState(listId, itemId, true)
-                    _pendingCheckedItems.apply { _pendingCheckedItems.value = emptySet() }
+                    _pendingCheckedItems.value = emptySet()
                 }
             } else {
+                // For unchecking, update immediately without delay
                 setItemCheckedState(listId, itemId, false)
+                repository.toggleItemChecked(itemId)
             }
         }
     }
@@ -104,29 +89,35 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                     )
                 } else list
             }
-            state.copy(
-                lists = updatedLists,
-            )
-        }
-    }
-
-    fun uncheckAllItems(listId: String) {
-        _uiState.update { state ->
-            val updatedLists = state.lists.map { list ->
-                if (list.id == listId) {
-                    list.copy(
-                        items = list.items.map { item ->
-                            item.copy(isChecked = false)
-                        }
-                    )
-                } else list
-            }
             state.copy(lists = updatedLists)
         }
     }
 
+    fun uncheckAllItems(listId: String) {
+        viewModelScope.launch {
+            repository.uncheckAllItems(listId)
+            // Update UI state immediately
+            _uiState.update { state ->
+                val updatedLists = state.lists.map { list ->
+                    if (list.id == listId) {
+                        list.copy(
+                            items = list.items.map { item ->
+                                item.copy(isChecked = false)
+                            }
+                        )
+                    } else list
+                }
+                state.copy(lists = updatedLists)
+            }
+        }
+    }
+
     fun openAddItemSheet() {
-        _uiState.update { it.copy(isAddItemSheetOpen = true) }
+        _uiState.update { it.copy(isAddItemSheetOpen = true, editItem = null, editItemListId = null) }
+    }
+
+    fun openEditItemSheet(listId: String, editItem: ShoppingItem) {
+        _uiState.update { it.copy(isAddItemSheetOpen = true, editItem = editItem, editItemListId = listId) }
     }
 
     fun closeAddItemSheet() {
@@ -139,6 +130,118 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
 
     fun closeCreateListSheet() {
         _uiState.update { it.copy(isCreateListSheetOpen = false) }
+    }
+
+    fun addNewList(name: String) {
+        val newList = ShoppingList(name = name)
+        viewModelScope.launch {
+            repository.createList(newList)
+            closeCreateListSheet()
+        }
+
+        _uiState.update { it.copy(selectedListId = newList.id) }
+    }
+
+    fun addNewItem(listId: String, text: String, quantity: Int? = null, unit: String = "") {
+        viewModelScope.launch {
+            val newItem = ShoppingItem(
+                text = text,
+                quantity = quantity,
+                unit = unit
+            )
+            repository.addItemToList(listId, newItem)
+
+            // Update UI state immediately
+            _uiState.update { state ->
+                val updatedLists = state.lists.map { list ->
+                    if (list.id == listId) {
+                        list.copy(items = list.items + newItem)
+                    } else list
+                }
+                state.copy(
+                    lists = updatedLists,
+                    isAddItemSheetOpen = false
+                )
+            }
+        }
+    }
+
+    fun updateItem(listId: String, itemId: String, text: String, quantity: Int? = null, unit: String = "") {
+        viewModelScope.launch {
+            repository.updateItem(listId, ShoppingItem(
+                id = itemId,
+                text = text,
+                quantity = quantity,
+                unit = unit
+            ))
+
+            // Update UI state immediately
+            _uiState.update { state ->
+                val updatedLists = state.lists.map { list ->
+                    if (list.id == listId) {
+                        list.copy(
+                            items = list.items.map { item ->
+                                if (item.id == itemId) {
+                                    item.copy(
+                                        text = text,
+                                        quantity = quantity,
+                                        unit = unit
+                                    )
+                                } else {
+                                    item
+                                }
+                            }
+                        )
+                    } else list
+                }
+                state.copy(lists = updatedLists)
+            }
+        }
+    }
+
+    fun deleteItemById(listId: String, itemId: String) {
+        viewModelScope.launch {
+            repository.deleteItem(itemId);
+
+            val currentItem = _uiState.value.lists
+                .find { it.id == listId }
+                ?.items
+                ?.find { it.id == itemId }
+            val itemName = currentItem?.text;
+
+            _uiState.update { state ->
+                val updatedLists = state.lists.map { list ->
+                    if (list.id == listId) {
+                        list.copy(items = list.items.filter { it.id != itemId })
+                    } else list
+                }
+                state.copy(
+                    lists = updatedLists,
+                    isAddItemSheetOpen = false,
+                    snackbarMessage = "\"$itemName\" was deleted",
+                    snackbarAction = {
+                        val item = currentItem!!;
+                        addNewItem(listId, item.text, item.quantity, item.unit)
+                    },
+                    lastDeletedItemForUndo = currentItem
+                )
+            }
+        }
+    }
+
+    fun clearSnackbar() {
+        _uiState.update { it.copy(
+            snackbarMessage = null,
+            snackbarAction = null
+        ) }
+    }
+
+    fun getEditItem(): ShoppingItem? {
+        return _uiState.value.editItem
+    }
+
+    fun getEditItemListId(): String? {
+        return _uiState.value.editItemListId
     }
 
     companion object {
@@ -158,4 +261,9 @@ data class ShoppingListState(
     val selectedListId: String = "",
     val isAddItemSheetOpen: Boolean = false,
     val isCreateListSheetOpen: Boolean = false,
+    val snackbarAction: (() -> Unit)? = null,
+    val snackbarMessage: String? = null,
+    val lastDeletedItemForUndo: ShoppingItem? = null,
+    val editItem: ShoppingItem? = null,
+    val editItemListId: String? = null,
 )

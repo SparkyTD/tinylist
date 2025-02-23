@@ -1,5 +1,6 @@
 package com.firestormsw.tinylist.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -47,7 +48,8 @@ import java.util.UUID
 fun AddItemSheet(
     isOpen: Boolean,
     onDismiss: () -> Unit,
-    onSave: (ShoppingItem) -> Unit
+    onSave: (ShoppingItem) -> Unit,
+    editItem: ShoppingItem? = null
 ) {
     var itemText by remember { mutableStateOf("") }
     var itemQuantity by remember { mutableIntStateOf(1) }
@@ -178,16 +180,22 @@ fun AddItemSheet(
                         enabled = itemText.isNotEmpty(),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Add item to list")
+                        Text(
+                            if (editItem == null) {
+                                "Add item to list"
+                            } else {
+                                "Save item"
+                            }
+                        )
                     }
                 }
             }
 
             LaunchedEffect(Unit) {
                 focusRequester.requestFocus()
-                itemText = ""
-                itemQuantity = 1
-                itemUnit = ""
+                itemText = editItem?.text ?: ""
+                itemQuantity = editItem?.quantity ?: 1
+                itemUnit = editItem?.unit ?: ""
             }
         }
     }

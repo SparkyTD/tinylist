@@ -3,8 +3,11 @@ package com.firestormsw.tinylist.data
 import com.firestormsw.tinylist.data.dao.ShoppingDao
 import com.firestormsw.tinylist.data.entities.ShoppingItemEntity
 import com.firestormsw.tinylist.data.entities.ShoppingListEntity
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transformLatest
 
 class ShoppingRepository(private val shoppingDao: ShoppingDao) {
     // Domain model to entity conversions
@@ -37,11 +40,13 @@ class ShoppingRepository(private val shoppingDao: ShoppingDao) {
     )
 
     // Shopping List Operations
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getAllLists(): Flow<List<ShoppingList>> = shoppingDao.getAllLists()
-        .map { lists ->
-            lists.map { list ->
-                list.toDomain()
+        .transformLatest { lists ->
+            val listsWithItems = lists.map { list ->
+                shoppingDao.getListWithItems(list.id).first()
             }
+            emit(listsWithItems.mapNotNull { it?.list?.toDomain(it.items) })
         }
 
     fun getListById(listId: String): Flow<ShoppingList?> = shoppingDao.getListWithItems(listId)

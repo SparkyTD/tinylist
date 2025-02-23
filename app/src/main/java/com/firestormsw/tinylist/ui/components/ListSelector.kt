@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,6 +15,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.firestormsw.tinylist.data.ShoppingList
+import com.firestormsw.tinylist.ui.Add
+import com.firestormsw.tinylist.ui.EllipsisVertical
+import com.firestormsw.tinylist.ui.Remove
 
 @Composable
 fun ListSelector(
@@ -40,6 +44,11 @@ fun ListSelector(
                 selected = selected,
                 onClick = { onListSelected(list.id) },
                 label = { Text(list.name) },
+                /*trailingIcon = {
+                    if (selected) {
+                        Icon(EllipsisVertical, contentDescription = "")
+                    }
+                },*/
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = backgroundColor
                 )
@@ -47,9 +56,10 @@ fun ListSelector(
         }
         item {
             FilterChip(
-                selected = true,
+                selected = false,
                 onClick = onPromptCreateList,
-                label = { Text("+ Add") },
+                leadingIcon = { Icon(Add, contentDescription = "") },
+                label = { Text("Add") },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
                 )
