@@ -167,25 +167,41 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
 
     fun addNewItem(listId: String, text: String, quantity: Int? = null, unit: String = "") {
         viewModelScope.launch {
-            val newItem = ShoppingItem(
-                text = text,
-                quantity = quantity,
-                unit = unit
-            )
-            repository.addItemToList(listId, newItem)
+            val targetList = _uiState.value.lists.find {
+                it.id == listId
+            }
 
-            // Update UI state immediately
-            _uiState.update { state ->
-                val updatedLists = state.lists.map { list ->
-                    if (list.id == listId) {
-                        list.copy(items = list.items + newItem)
-                    } else list
-                }
-                state.copy(
-                    lists = updatedLists,
-                    isAddItemSheetOpen = false,
-                    editItem = null,
+            if (targetList == null) {
+                return@launch
+            }
+
+            val existingItem = targetList.items.find {
+                it.text == text
+            }
+
+            if (existingItem == null) {
+                val newItem = ShoppingItem(
+                    text = text,
+                    quantity = quantity,
+                    unit = unit
                 )
+                repository.addItemToList(listId, newItem)
+
+                // Update UI state immediately
+                _uiState.update { state ->
+                    val updatedLists = state.lists.map { list ->
+                        if (list.id == listId) {
+                            list.copy(items = list.items + newItem)
+                        } else list
+                    }
+                    state.copy(
+                        lists = updatedLists,
+                        isAddItemSheetOpen = false,
+                        editItem = null,
+                    )
+                }
+            } else {
+                updateItem(listId, existingItem.id, text, quantity, unit)
             }
         }
     }
