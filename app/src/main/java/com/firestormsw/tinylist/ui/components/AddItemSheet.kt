@@ -52,7 +52,7 @@ fun AddItemSheet(
     editItem: ShoppingItem? = null
 ) {
     var itemText by remember { mutableStateOf("") }
-    var itemQuantity by remember { mutableIntStateOf(1) }
+    var itemQuantity by remember { mutableIntStateOf(0) }
     var itemUnit by remember { mutableStateOf("") }
 
     val focusRequester = remember { FocusRequester() }
@@ -194,7 +194,7 @@ fun AddItemSheet(
             LaunchedEffect(Unit) {
                 focusRequester.requestFocus()
                 itemText = editItem?.text ?: ""
-                itemQuantity = editItem?.quantity ?: 1
+                itemQuantity = editItem?.quantity ?: 0
                 itemUnit = editItem?.unit ?: ""
             }
         }

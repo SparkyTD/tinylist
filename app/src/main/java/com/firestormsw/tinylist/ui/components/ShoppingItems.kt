@@ -45,7 +45,7 @@ fun ShoppingItems(
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         items(
             items = uncheckedItems,
