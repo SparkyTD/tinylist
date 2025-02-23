@@ -1,51 +1,45 @@
 # Tiny List
 
-A minimalistic, no-nonsense todo/shopping list app for Android. Because managing lists shouldn't require a subscription.
+A simple, minimalistic, no-nonsense todo/shopping list app for Android.
 
 ## What it does
 
-Tiny List is a straightforward list management app that:
-- Creates and manages multiple named lists
-- Adds/removes items from lists
-- Checks/unchecks items
-- Supports optional quantities and units
-- Has a clean, simple interface that gets out of your way
-- Works offline
-- Respects your privacy
-- Is completely free and open source
+Tiny List is a straightforward list management app that focuses on being simple and effective:
+
+- Create and manage multiple named lists
+- Add, edit, check/uncheck, and remove items
+- Specify quantities and units for items (optional)
+- Clean, minimalist interface
+- Fully offline: all data stays on your device
 
 ## What it doesn't do
 
-Tiny List deliberately does not include:
+Tiny List is proud to NOT include:
 - AI
 - Ads
-- Subscription fees
-- Mandatory account creation
-- Data collection
-- Any form of analytics or telemetry
-- Social features
-- Pointless gamification
-- Annoying popups
 - "Premium" features
-- Or any other unnecessary bloat
+- Subscription fees
+- Account creation requirements
+- Analytics or any form of data collection
+- Social features you didn't ask for
+- Gamification nobody wanted
+- Full-screen popups begging you to pay
+- Any other bloatware
 
 ## Installation
 
 Download the latest APK from the [Releases](../../releases) page and install it on your Android device.
 
-## Building from source
-
-1. Clone the repository
-2. Open in Android Studio
-3. Build using Gradle
-```bash
-./gradlew assembleDebug
-```
+Note: When installing, Android might warn you about installing apps from unknown sources. This is normal for apps not distributed through the Play Store. The app is open source, and you can verify the code yourself.
 
 ## Contributing
 
-Feel free to contribute by opening issues or submitting pull requests. Keep in mind the project's core philosophy: simplicity and functionality without bloat.
+Feel free to:
+- Open issues for bugs or feature requests
+- Submit pull requests
+- Fork the project and make your own version
+- Use the code in your own projects
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. Do whatever you want with it.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. In simple terms: do whatever you want with it.
