@@ -25,7 +25,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.firestormsw.tinylist.R
 import com.firestormsw.tinylist.data.ShoppingItem
 import com.firestormsw.tinylist.viewmodel.ShoppingListViewModel
 
@@ -51,7 +53,7 @@ fun ShoppingItems(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("This list is empty", color = MaterialTheme.colorScheme.secondaryContainer)
+            Text(stringResource(R.string.no_items_label), color = MaterialTheme.colorScheme.secondaryContainer)
         }
     }
 
@@ -88,7 +90,7 @@ fun ShoppingItems(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Completed (${checkedItems.size})",
+                        stringResource(R.string.completed_count, checkedItems.size),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.outline,
                     )
@@ -99,9 +101,9 @@ fun ShoppingItems(
                             Icons.Default.KeyboardArrowDown
                         },
                         contentDescription = if (isCompletedExpanded) {
-                            "Collapse completed items"
+                            stringResource(R.string.collapse_completed_items)
                         } else {
-                            "Expand completed items"
+                            stringResource(R.string.expand_completed_items)
                         },
                         tint = MaterialTheme.colorScheme.outline
                     )
@@ -127,7 +129,7 @@ fun ShoppingItems(
                         onClick = { onUncheckAllClick() },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
-                        Text("Uncheck All")
+                        Text(stringResource(R.string.uncheck_all))
                     }
                 }
             }

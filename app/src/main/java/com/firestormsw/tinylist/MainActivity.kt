@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.firestormsw.tinylist.data.AppDatabase
@@ -47,12 +48,13 @@ class MainActivity : ComponentActivity() {
 
         val database = AppDatabase.getDatabase(applicationContext)
         val repository = ShoppingRepository(database.shoppingDao())
+        val resourceProvider = ResourceProvider(this)
 
         enableEdgeToEdge()
         setContent {
             TinyListTheme {
                 val viewModel: ShoppingListViewModel = viewModel(
-                    factory = ShoppingListViewModel.provideFactory(repository)
+                    factory = ShoppingListViewModel.provideFactory(repository, resourceProvider)
                 )
                 val state by viewModel.uiState.collectAsState()
 
@@ -64,7 +66,7 @@ class MainActivity : ComponentActivity() {
                         if (state.snackbarMessage != null) {
                             val result = snackbarHostState.showSnackbar(
                                 message = state.snackbarMessage!!,
-                                actionLabel = "Undo",
+                                actionLabel = getString(R.string.undo),
                                 duration = SnackbarDuration.Short
                             )
 
@@ -108,7 +110,7 @@ class MainActivity : ComponentActivity() {
                                 onClick = viewModel::openAddItemSheet,
                                 modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 62.dp)
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = "Add item")
+                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_item))
                             }
                         },
                         snackbarHost = {
@@ -210,7 +212,7 @@ class MainActivity : ComponentActivity() {
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                "Start by adding a new list",
+                                stringResource(R.string.no_lists_label),
                                 color = MaterialTheme.colorScheme.secondaryContainer
                             )
                         }

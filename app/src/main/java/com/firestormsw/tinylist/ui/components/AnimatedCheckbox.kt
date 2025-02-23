@@ -21,7 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.firestormsw.tinylist.R
 
 @Composable
 fun AnimatedCheckbox(
@@ -30,13 +32,13 @@ fun AnimatedCheckbox(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    val circleDiameter = 24.dp;
-    val endPadding = 20.dp;
+    val circleDiameter = 24.dp
+    val endPadding = 20.dp
     val animation = tween<Color>(
         durationMillis = 300,
         delayMillis = 0,
         easing = LinearOutSlowInEasing
-    );
+    )
 
     val fillColor: Color by animateColorAsState(
         animationSpec = animation,
@@ -77,7 +79,9 @@ fun AnimatedCheckbox(
 
         Icon(
             imageVector = Icons.Default.Check,
-            contentDescription = if (checked) "Checked" else "Unchecked",
+            contentDescription = if (checked) stringResource(R.string.checkbox_checked) else stringResource(
+                R.string.checkbox_unchecked
+            ),
             tint = checkMarkColor,
             modifier = Modifier
                 .size(16.dp)

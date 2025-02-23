@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.firestormsw.tinylist.R
+import com.firestormsw.tinylist.ResourceProvider
 import com.firestormsw.tinylist.data.ShoppingItem
 import com.firestormsw.tinylist.data.ShoppingList
 import com.firestormsw.tinylist.data.ShoppingRepository
@@ -16,7 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewModel() {
+class ShoppingListViewModel(private val repository: ShoppingRepository, private val resourceProvider: ResourceProvider) : ViewModel() {
     private val _uiState = MutableStateFlow(ShoppingListState())
     val uiState: StateFlow<ShoppingListState> = _uiState.asStateFlow()
 
@@ -174,7 +176,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
             var actualListId = listId
 
             if (targetList == null) {
-                targetList = ShoppingList(name = "Default")
+                targetList = ShoppingList(name = resourceProvider.getString(R.string.default_list_name))
                 repository.createList(targetList)
 
                 actualListId = targetList.id
@@ -278,7 +280,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                 state.copy(
                     lists = updatedLists,
                     isAddItemSheetOpen = false,
-                    snackbarMessage = "\"$itemName\" was deleted",
+                    snackbarMessage = resourceProvider.getString(R.string.entry_deleted, itemName),
                     snackbarAction = {
                         val item = currentItem!!
                         addNewItem(listId, item.text, item.quantity, item.unit)
@@ -328,7 +330,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                         }
                     },
                     lists = updatedLists,
-                    snackbarMessage = "\"$itemName\" was deleted",
+                    snackbarMessage = resourceProvider.getString(R.string.entry_deleted, itemName),
                     lastDeletedListForUndo = currentList
                 )
             }
@@ -364,11 +366,12 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
 
     companion object {
         fun provideFactory(
-            repository: ShoppingRepository
+            repository: ShoppingRepository,
+            resourceProvider: ResourceProvider
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ShoppingListViewModel(repository) as T
+                return ShoppingListViewModel(repository, resourceProvider) as T
             }
         }
     }

@@ -1,3 +1,29 @@
 <resources>
     <string name="app_name">Tiny List</string>
+    <string name="undo">Undo</string>
+    <string name="add_item">Add item</string>
+    <string name="no_lists_label">Start by adding a new list</string>
+    <string name="item_name">Item name</string>
+    <string name="quantity">Quantity</string>
+    <string name="unit">Unit</string>
+    <string name="decrease_quantity">Decrease quantity</string>
+    <string name="increase_quantity">Increase quantity</string>
+    <string name="add_item_to_list">Add item to list</string>
+    <string name="save_item">Save item</string>
+    <string name="list_name">List name</string>
+    <string name="create_list">Create list</string>
+    <string name="save_list">Save list</string>
+    <string name="checkbox_checked">Checked</string>
+    <string name="checkbox_unchecked">Unchecked</string>
+    <string name="create_new_list_desc">Create new list</string>
+    <string name="create_new_list_label">Add</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="no_items_label">This list is empty</string>
+    <string name="collapse_completed_items">Collapse completed items</string>
+    <string name="expand_completed_items">Expand completed items</string>
+    <string name="uncheck_all">Uncheck All</string>
+    <string name="completed_count">Completed (%1$s)</string>
+    <string name="default_list_name">Default</string>
+    <string name="entry_deleted">\"%1$s\" was deleted</string>
 </resources>

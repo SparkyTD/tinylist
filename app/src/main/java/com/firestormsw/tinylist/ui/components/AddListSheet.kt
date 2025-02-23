@@ -1,6 +1,5 @@
 package com.firestormsw.tinylist.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,8 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import com.firestormsw.tinylist.R
 import com.firestormsw.tinylist.data.ShoppingList
 import ulid.ULID
 
@@ -64,7 +65,7 @@ fun AddListSheet(
                             .padding(vertical = 8.dp)
                     ) {}
 
-                    val dragHandleColor = MaterialTheme.colorScheme.tertiaryContainer;
+                    val dragHandleColor = MaterialTheme.colorScheme.tertiaryContainer
 
                     Canvas(
                         modifier = Modifier
@@ -93,7 +94,7 @@ fun AddListSheet(
                     OutlinedTextField(
                         value = itemText,
                         onValueChange = { itemText = it },
-                        label = { Text("List name") },
+                        label = { Text(stringResource(R.string.list_name)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
                         modifier = Modifier
@@ -119,9 +120,9 @@ fun AddListSheet(
                     ) {
                         Text(
                             if (editList == null) {
-                                "Create list"
+                                stringResource(R.string.create_list)
                             } else {
-                                "Save list"
+                                stringResource(R.string.save_list)
                             }
                         )
                     }

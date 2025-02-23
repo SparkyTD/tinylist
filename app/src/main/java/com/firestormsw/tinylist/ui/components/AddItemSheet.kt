@@ -33,9 +33,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.firestormsw.tinylist.R
 import com.firestormsw.tinylist.data.ShoppingItem
 import com.firestormsw.tinylist.ui.Add
 import com.firestormsw.tinylist.ui.Remove
@@ -101,7 +103,7 @@ fun AddItemSheet(
                     OutlinedTextField(
                         value = itemText,
                         onValueChange = { itemText = it },
-                        label = { Text("Item name") },
+                        label = { Text(stringResource(R.string.item_name)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
                         modifier = Modifier
@@ -129,7 +131,7 @@ fun AddItemSheet(
                                 0
                             }
                         },
-                        label = { Text("Quantity") },
+                        label = { Text(stringResource(R.string.quantity)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(0.3333f)
@@ -137,7 +139,7 @@ fun AddItemSheet(
                     OutlinedTextField(
                         value = itemUnit,
                         onValueChange = { itemUnit = it },
-                        label = { Text("Unit") },
+                        label = { Text(stringResource(R.string.unit)) },
                         singleLine = true,
                         modifier = Modifier.weight(0.3333f)
                     )
@@ -150,13 +152,13 @@ fun AddItemSheet(
                         },
                         modifier = Modifier.weight(0.1666f)
                     ) {
-                        Icon(Remove, contentDescription = "Decrease quantity")
+                        Icon(Remove, contentDescription = stringResource(R.string.decrease_quantity))
                     }
                     IconButton(
                         onClick = { itemQuantity += 1 },
                         modifier = Modifier.weight(0.1666f)
                     ) {
-                        Icon(Add, contentDescription = "Increase quantity")
+                        Icon(Add, contentDescription = stringResource(R.string.increase_quantity))
                     }
                 }
 
@@ -180,9 +182,9 @@ fun AddItemSheet(
                     ) {
                         Text(
                             if (editItem == null) {
-                                "Add item to list"
+                                stringResource(R.string.add_item_to_list)
                             } else {
-                                "Save item"
+                                stringResource(R.string.save_item)
                             }
                         )
                     }

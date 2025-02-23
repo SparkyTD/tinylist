@@ -30,9 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import com.firestormsw.tinylist.R
 import com.firestormsw.tinylist.data.ShoppingItem
 
 @Composable
@@ -144,7 +146,7 @@ fun ShoppingItemRow(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface
                         )
-                        Text("Edit")
+                        Text(stringResource(R.string.edit))
                     }
                 },
                 onClick = {
@@ -163,7 +165,7 @@ fun ShoppingItemRow(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error
                         )
-                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 onClick = {

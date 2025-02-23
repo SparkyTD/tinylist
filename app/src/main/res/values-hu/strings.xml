@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tiny List</string>
+    <string name="undo">Mégsem</string>
+    <string name="add_item">Új tétel</string>
+    <string name="no_lists_label">Hozz létre egy új listát</string>
+    <string name="item_name">Tétel neve</string>
+    <string name="quantity">Mennyiség</string>
+    <string name="unit">Mértékegység</string>
+    <string name="decrease_quantity">Mennyiség csökkentése</string>
+    <string name="increase_quantity">Mennyiség növelése</string>
+    <string name="add_item_to_list">Új tétel hozzáadása</string>
+    <string name="save_item">Mentés</string>
+    <string name="list_name">Lista neve</string>
+    <string name="create_list">Lista létrehozása</string>
+    <string name="save_list">Lista mentése</string>
+    <string name="checkbox_checked">Bejelölt</string>
+    <string name="checkbox_unchecked">Bejelöletlen</string>
+    <string name="create_new_list_desc">Új lista létrehozása</string>
+    <string name="create_new_list_label">Új</string>
+    <string name="edit">Szerkeszt</string>
+    <string name="delete">Töröl</string>
+    <string name="no_items_label">Ez a lista üres</string>
+    <string name="collapse_completed_items">Teljesített tételek összevonása</string>
+    <string name="expand_completed_items">Teljesített tételek megjelenítése</string>
+    <string name="uncheck_all">Jelölések törlése</string>
+    <string name="completed_count">Teljesített (%1$s)</string>
+    <string name="default_list_name">Alapértelmezett</string>
+    <string name="entry_deleted">\"%1$s\" törölve</string>
+</resources>

@@ -29,8 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import com.firestormsw.tinylist.R
 import com.firestormsw.tinylist.data.ShoppingList
 import com.firestormsw.tinylist.ui.Add
 
@@ -97,8 +99,8 @@ fun ListSelector(
             FilterChip(
                 selected = true,
                 onClick = onPromptCreateList,
-                leadingIcon = { Icon(Add, contentDescription = "Create new list") },
-                label = { Text("Add") },
+                leadingIcon = { Icon(Add, contentDescription = stringResource(R.string.create_new_list_desc)) },
+                label = { Text(stringResource(R.string.create_new_list_label)) },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
                 )
@@ -122,7 +124,7 @@ fun ListSelector(
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface
                     )
-                    Text("Edit")
+                    Text(stringResource(R.string.edit))
                 }
             },
             onClick = {
@@ -141,7 +143,7 @@ fun ListSelector(
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error
                     )
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             onClick = {
