@@ -13,6 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.FloatingActionButtonElevation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -91,6 +93,12 @@ class MainActivity : ComponentActivity() {
                                         selectedListId = state.selectedListId,
                                         onListSelected = viewModel::selectList,
                                         onPromptCreateList = viewModel::openCreateListSheet,
+                                        onPromptEditList = { list ->
+                                            viewModel.openEditListSheet(list)
+                                        },
+                                        onPromptDeleteList = { list ->
+                                            viewModel.deleteListById(list.id)
+                                        },
                                         modifier = Modifier.padding(vertical = 8.dp)
                                     )
                                 }
@@ -99,6 +107,7 @@ class MainActivity : ComponentActivity() {
                         floatingActionButton = {
                             FloatingActionButton(
                                 onClick = viewModel::openAddItemSheet,
+                                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 62.dp)
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = "Add item")
                             }
@@ -184,9 +193,16 @@ class MainActivity : ComponentActivity() {
                         isOpen = state.isCreateListSheetOpen,
                         onDismiss = viewModel::closeCreateListSheet,
                         onSave = {
-                            viewModel.addNewList(it.name)
-                            viewModel.closeCreateListSheet()
-                        }
+                            val editList = viewModel.getEditList();
+                            if (editList == null) {
+                                viewModel.addNewList(it.name)
+                                viewModel.closeCreateListSheet()
+                            } else {
+                                viewModel.updateList(it)
+                                viewModel.closeCreateListSheet()
+                            }
+                        },
+                        editList = viewModel.getEditList()
                     )
                 }
             }

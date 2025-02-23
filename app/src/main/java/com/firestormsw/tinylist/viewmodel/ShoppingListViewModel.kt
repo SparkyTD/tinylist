@@ -113,11 +113,23 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
     }
 
     fun openAddItemSheet() {
-        _uiState.update { it.copy(isAddItemSheetOpen = true, editItem = null, editItemListId = null) }
+        _uiState.update {
+            it.copy(
+                isAddItemSheetOpen = true,
+                editItem = null,
+                editItemListId = null
+            )
+        }
     }
 
     fun openEditItemSheet(listId: String, editItem: ShoppingItem) {
-        _uiState.update { it.copy(isAddItemSheetOpen = true, editItem = editItem, editItemListId = listId) }
+        _uiState.update {
+            it.copy(
+                isAddItemSheetOpen = true,
+                editItem = editItem,
+                editItemListId = listId
+            )
+        }
     }
 
     fun closeAddItemSheet() {
@@ -128,18 +140,29 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
         _uiState.update { it.copy(isCreateListSheetOpen = true) }
     }
 
+    fun openEditListSheet(list: ShoppingList) {
+        _uiState.update { it.copy(isCreateListSheetOpen = true, editList = list) }
+    }
+
     fun closeCreateListSheet() {
         _uiState.update { it.copy(isCreateListSheetOpen = false) }
     }
 
-    fun addNewList(name: String) {
+    fun addNewList(name: String): ShoppingList {
         val newList = ShoppingList(name = name)
         viewModelScope.launch {
             repository.createList(newList)
             closeCreateListSheet()
         }
 
-        _uiState.update { it.copy(selectedListId = newList.id) }
+        _uiState.update {
+            it.copy(
+                selectedListId = newList.id,
+                editList = null,
+            )
+        }
+
+        return newList
     }
 
     fun addNewItem(listId: String, text: String, quantity: Int? = null, unit: String = "") {
@@ -160,20 +183,29 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                 }
                 state.copy(
                     lists = updatedLists,
-                    isAddItemSheetOpen = false
+                    isAddItemSheetOpen = false,
+                    editItem = null,
                 )
             }
         }
     }
 
-    fun updateItem(listId: String, itemId: String, text: String, quantity: Int? = null, unit: String = "") {
+    fun updateItem(
+        listId: String,
+        itemId: String,
+        text: String,
+        quantity: Int? = null,
+        unit: String = ""
+    ) {
         viewModelScope.launch {
-            repository.updateItem(listId, ShoppingItem(
-                id = itemId,
-                text = text,
-                quantity = quantity,
-                unit = unit
-            ))
+            repository.updateItem(
+                listId, ShoppingItem(
+                    id = itemId,
+                    text = text,
+                    quantity = quantity,
+                    unit = unit
+                )
+            )
 
             // Update UI state immediately
             _uiState.update { state ->
@@ -194,14 +226,14 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
                         )
                     } else list
                 }
-                state.copy(lists = updatedLists)
+                state.copy(lists = updatedLists, editItem = null)
             }
         }
     }
 
     fun deleteItemById(listId: String, itemId: String) {
         viewModelScope.launch {
-            repository.deleteItem(itemId);
+            repository.deleteItem(itemId)
 
             val currentItem = _uiState.value.lists
                 .find { it.id == listId }
@@ -229,11 +261,59 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
         }
     }
 
+    fun updateList(editList: ShoppingList) {
+        viewModelScope.launch {
+            repository.updateList(editList)
+
+            // Update UI state immediately
+            _uiState.update { state ->
+                val updatedLists = state.lists.map { list ->
+                    if (list.id == editList.id) {
+                        list.copy(
+                            name = editList.name
+                        )
+                    } else list
+                }
+                state.copy(lists = updatedLists, editList = null)
+            }
+        }
+    }
+
+    fun deleteListById(listId: String) {
+        viewModelScope.launch {
+            repository.deleteList(listId)
+
+            val currentList = _uiState.value.lists
+                .find { it.id == listId }!!;
+            val itemName = currentList.name;
+
+            _uiState.update { state ->
+                val updatedLists = state.lists.filter { list ->
+                    list.id != listId
+                }
+                state.copy(
+                    selectedListId = "",
+                    snackbarAction = {
+                        val newList = addNewList(itemName)
+                        for (item in currentList.items) {
+                            addNewItem(newList.id, item.text, item.quantity, item.unit)
+                        }
+                    },
+                    lists = updatedLists,
+                    snackbarMessage = "\"$itemName\" was deleted",
+                    lastDeletedListForUndo = currentList
+                )
+            }
+        }
+    }
+
     fun clearSnackbar() {
-        _uiState.update { it.copy(
-            snackbarMessage = null,
-            snackbarAction = null
-        ) }
+        _uiState.update {
+            it.copy(
+                snackbarMessage = null,
+                snackbarAction = null
+            )
+        }
     }
 
     fun getEditItem(): ShoppingItem? {
@@ -242,6 +322,10 @@ class ShoppingListViewModel(private val repository: ShoppingRepository) : ViewMo
 
     fun getEditItemListId(): String? {
         return _uiState.value.editItemListId
+    }
+
+    fun getEditList(): ShoppingList? {
+        return _uiState.value.editList
     }
 
     companion object {
@@ -264,6 +348,8 @@ data class ShoppingListState(
     val snackbarAction: (() -> Unit)? = null,
     val snackbarMessage: String? = null,
     val lastDeletedItemForUndo: ShoppingItem? = null,
+    val lastDeletedListForUndo: ShoppingList? = null,
     val editItem: ShoppingItem? = null,
     val editItemListId: String? = null,
+    val editList: ShoppingList? = null,
 )

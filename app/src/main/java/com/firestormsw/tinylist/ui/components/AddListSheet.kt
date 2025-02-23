@@ -1,5 +1,6 @@
 package com.firestormsw.tinylist.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,17 +33,16 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import com.firestormsw.tinylist.data.ShoppingItem
 import com.firestormsw.tinylist.data.ShoppingList
 import ulid.ULID
-import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddListSheet(
     isOpen: Boolean,
     onDismiss: () -> Unit,
-    onSave: (ShoppingList) -> Unit
+    onSave: (ShoppingList) -> Unit,
+    editList: ShoppingList? = null,
 ) {
     var itemText by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
@@ -109,7 +109,7 @@ fun AddListSheet(
                         onClick = {
                             onSave(
                                 ShoppingList(
-                                    id = ULID.randomULID(),
+                                    id = editList?.id ?: ULID.randomULID(),
                                     name = itemText,
                                 )
                             )
@@ -117,14 +117,20 @@ fun AddListSheet(
                         enabled = itemText.isNotEmpty(),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Create list")
+                        Text(
+                            if (editList == null) {
+                                "Create list"
+                            } else {
+                                "Save list"
+                            }
+                        )
                     }
                 }
             }
 
             LaunchedEffect(Unit) {
                 focusRequester.requestFocus()
-                itemText = ""
+                itemText = editList?.name ?: ""
             }
         }
     }

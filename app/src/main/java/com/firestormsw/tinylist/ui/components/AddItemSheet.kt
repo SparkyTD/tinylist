@@ -1,6 +1,5 @@
 package com.firestormsw.tinylist.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,7 +40,6 @@ import com.firestormsw.tinylist.data.ShoppingItem
 import com.firestormsw.tinylist.ui.Add
 import com.firestormsw.tinylist.ui.Remove
 import ulid.ULID
-import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
