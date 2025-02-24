@@ -2,19 +2,27 @@
 
 A simple, minimalistic, no-nonsense todo/shopping list app for Android.
 
+## Screenshots
+<p float="left">
+<img src="./screenshots/store1.png" width="200">
+<img src="./screenshots/store2.png" width="200">
+<img src="./screenshots/store3.png" width="200">
+<img src="./screenshots/store4.png" width="200">
+</p>
+
 ## What it does
 
 Tiny List is a straightforward list management app that focuses on being simple and effective:
 
 - Create and manage multiple named lists
-- Add, edit, check/uncheck, and remove items
-- Specify quantities and units for items (optional)
-- Clean, minimalist interface
+- Add, edit, check/uncheck, and remove list items
+- Optionally specify quantities and units for items
+- Simple and intuitive interface
 - Fully offline: all data stays on your device
 
 ## What it doesn't do
 
-Tiny List is proud to NOT include:
+Tiny List does NOT include:
 - AI
 - Ads
 - "Premium" features
@@ -32,10 +40,11 @@ Download the latest APK from the [Releases](../../releases) page and install it 
 
 Note: When installing, Android might warn you about installing apps from unknown sources. This is normal for apps not distributed through the Play Store. The app is open source, and you can verify the code yourself.
 
+Since the app is still in development, there are currently no plans to publish it to the Play Store or FDroid any time soon. Maybe in the future.
+
 ## Contributing
 
 Feel free to:
-- Open issues for bugs or feature requests
 - Submit pull requests
 - Fork the project and make your own version
 - Use the code in your own projects
