@@ -29,4 +29,5 @@
     <string name="entry_deleted">\"%1$s\" törölve</string>
     <string name="highlight_item">Kiemelés</string>
     <string name="unhighlight_item">Kiemelés törlése</string>
+    <string name="all_items_have_been_checked_off">Minden tétel be lett jelölve!</string>
 </resources>
