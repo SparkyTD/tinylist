@@ -61,11 +61,16 @@ class ShoppingListViewModel(
                 // Update the database immediately
                 repository.toggleItemChecked(itemId)
 
+                // If item is highlighted, then unhighlight when checked
+                if (currentItem.isHighlighted) {
+                    repository.setItemHighlighted(itemId, false)
+                }
+
                 // Add to pending items first for immediate UI feedback
                 _pendingCheckedItems.value += itemId
 
                 // Update UI state immediately
-                setItemCheckedState(listId, itemId, true)
+                updateItemCheckedState(listId, itemId, checked = true, highlighted = false)
 
                 // Schedule the delayed confirmation
                 pendingMoveJob?.cancel()
@@ -75,7 +80,7 @@ class ShoppingListViewModel(
                 }
             } else {
                 // For unchecking, update immediately without delay
-                setItemCheckedState(listId, itemId, false)
+                updateItemCheckedState(listId, itemId, false)
                 repository.toggleItemChecked(itemId)
             }
         }
@@ -102,14 +107,18 @@ class ShoppingListViewModel(
         }
     }
 
-    private fun setItemCheckedState(listId: String, itemId: String, checked: Boolean) {
+    private fun updateItemCheckedState(listId: String, itemId: String, checked: Boolean, highlighted: Boolean? = null) {
         _uiState.update { state ->
             val updatedLists = state.lists.map { list ->
                 if (list.id == listId) {
                     list.copy(
                         items = list.items.map { item ->
                             if (item.id == itemId) {
-                                item.copy(isChecked = checked)
+                                if (highlighted == null) {
+                                    item.copy(isChecked = checked)
+                                } else {
+                                    item.copy(isChecked = checked, isHighlighted = highlighted)
+                                }
                             } else item
                         }
                     )
