@@ -2,6 +2,14 @@
 
 A simple, minimalistic, no-nonsense todo/shopping list app for Android.
 
+## Screenshots
+<p float="left">
+<img src="./screenshots/store1.png" width="200">
+<img src="./screenshots/store2.png" width="200">
+<img src="./screenshots/store3.png" width="200">
+<img src="./screenshots/store4.png" width="200">
+</p>
+
 ## What it does
 
 Tiny List is a straightforward list management app that focuses on being simple and effective:
