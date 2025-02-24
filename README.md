@@ -22,7 +22,7 @@ Tiny List is a straightforward list management app that focuses on being simple 
 
 ## What it doesn't do
 
-Tiny List is proud to NOT include:
+Tiny List does NOT include:
 - AI
 - Ads
 - "Premium" features
