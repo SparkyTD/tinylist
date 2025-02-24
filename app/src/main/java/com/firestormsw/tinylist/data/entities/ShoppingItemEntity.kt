@@ -26,4 +26,5 @@ data class ShoppingItemEntity(
     val quantity: Int?,
     val unit: String,
     val isChecked: Boolean,
+    val isHighlighted: Boolean,
 )

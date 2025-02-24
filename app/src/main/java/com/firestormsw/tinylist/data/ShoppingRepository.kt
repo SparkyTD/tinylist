@@ -22,7 +22,8 @@ class ShoppingRepository(private val shoppingDao: ShoppingDao) {
         text = text,
         quantity = quantity,
         unit = unit,
-        isChecked = isChecked
+        isChecked = isChecked,
+        isHighlighted = isHighlighted
     )
 
     private fun ShoppingListEntity.toDomain(items: List<ShoppingItemEntity> = emptyList()) = ShoppingList(
@@ -36,7 +37,8 @@ class ShoppingRepository(private val shoppingDao: ShoppingDao) {
         text = text,
         quantity = quantity,
         unit = unit,
-        isChecked = isChecked
+        isChecked = isChecked,
+        isHighlighted = isHighlighted
     )
 
     // Shopping List Operations
@@ -92,6 +94,11 @@ class ShoppingRepository(private val shoppingDao: ShoppingDao) {
     suspend fun toggleItemChecked(itemId: String) {
         val item = shoppingDao.getItemByIdOnce(itemId) ?: return
         shoppingDao.updateItemCheckedStatus(itemId, !item.isChecked)
+    }
+
+    suspend fun setItemHighlighted(itemId: String, state: Boolean) {
+        val item = shoppingDao.getItemByIdOnce(itemId) ?: return
+        shoppingDao.setItemHighlightedStatus(itemId, state)
     }
 
     suspend fun updateItemQuantity(itemId: String, quantity: Int?) {

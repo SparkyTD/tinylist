@@ -17,8 +17,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ulid.ULID
 
-class ShoppingListViewModel(private val repository: ShoppingRepository, private val resourceProvider: ResourceProvider) : ViewModel() {
+class ShoppingListViewModel(
+    private val repository: ShoppingRepository,
+    private val resourceProvider: ResourceProvider
+) : ViewModel() {
     private val _uiState = MutableStateFlow(ShoppingListState())
     val uiState: StateFlow<ShoppingListState> = _uiState.asStateFlow()
 
@@ -73,6 +77,27 @@ class ShoppingListViewModel(private val repository: ShoppingRepository, private 
                 // For unchecking, update immediately without delay
                 setItemCheckedState(listId, itemId, false)
                 repository.toggleItemChecked(itemId)
+            }
+        }
+    }
+
+    fun setItemHighlighted(listId: String, itemId: String, isHighlighted: Boolean) {
+        viewModelScope.launch {
+            repository.setItemHighlighted(itemId, isHighlighted)
+
+            _uiState.update { state ->
+                val updatedLists = state.lists.map { list ->
+                    if (list.id == listId) {
+                        list.copy(
+                            items = list.items.map { item ->
+                                if (item.id == itemId) {
+                                    item.copy(isHighlighted = isHighlighted)
+                                } else item
+                            }
+                        )
+                    } else list
+                }
+                state.copy(lists = updatedLists)
             }
         }
     }
@@ -167,7 +192,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository, private 
         return newList
     }
 
-    fun addNewItem(listId: String, text: String, quantity: Int? = null, unit: String = "") {
+    fun addNewItem(listId: String, text: String, quantity: Int? = null, unit: String = "", id: String? = null) {
         viewModelScope.launch {
             var targetList = _uiState.value.lists.find {
                 it.id == listId
@@ -176,7 +201,8 @@ class ShoppingListViewModel(private val repository: ShoppingRepository, private 
             var actualListId = listId
 
             if (targetList == null) {
-                targetList = ShoppingList(name = resourceProvider.getString(R.string.default_list_name))
+                targetList =
+                    ShoppingList(name = resourceProvider.getString(R.string.default_list_name))
                 repository.createList(targetList)
 
                 actualListId = targetList.id
@@ -195,6 +221,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository, private 
 
             if (existingItem == null) {
                 val newItem = ShoppingItem(
+                    id = id ?: ULID.randomULID(),
                     text = text,
                     quantity = quantity,
                     unit = unit
@@ -220,13 +247,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository, private 
         }
     }
 
-    fun updateItem(
-        listId: String,
-        itemId: String,
-        text: String,
-        quantity: Int? = null,
-        unit: String = ""
-    ) {
+    fun updateItem(listId: String, itemId: String, text: String, quantity: Int? = null, unit: String = "") {
         viewModelScope.launch {
             repository.updateItem(
                 listId, ShoppingItem(
@@ -283,7 +304,7 @@ class ShoppingListViewModel(private val repository: ShoppingRepository, private 
                     snackbarMessage = resourceProvider.getString(R.string.entry_deleted, itemName),
                     snackbarAction = {
                         val item = currentItem!!
-                        addNewItem(listId, item.text, item.quantity, item.unit)
+                        addNewItem(listId, item.text, item.quantity, item.unit, item.id)
                     },
                     lastDeletedItemForUndo = currentItem
                 )

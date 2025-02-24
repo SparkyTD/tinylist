@@ -39,12 +39,17 @@ fun ShoppingItems(
     onUncheckAllClick: () -> Unit,
     onPromptDeleteItem: (ShoppingItem) -> Unit,
     onPromptEditItem: (ShoppingItem) -> Unit,
+    onItemSetHighlight: (ShoppingItem, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isCompletedExpanded by remember { mutableStateOf(true) }
 
     val pendingCheckedItemIds by viewModel.pendingCheckedItems
-    val (checkedItems, uncheckedItems) = items.partition { item ->
+    val (checkedItems, uncheckedItems) = items.sortedWith(
+        compareBy(
+            { !it.isHighlighted },
+            { it.id })
+    ).partition { item ->
         item.isChecked && item.id !in pendingCheckedItemIds
     }
 
@@ -53,7 +58,10 @@ fun ShoppingItems(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text(stringResource(R.string.no_items_label), color = MaterialTheme.colorScheme.secondaryContainer)
+            Text(
+                stringResource(R.string.no_items_label),
+                color = MaterialTheme.colorScheme.secondaryContainer
+            )
         }
     }
 
@@ -72,6 +80,9 @@ fun ShoppingItems(
                     onPromptEditItem(item)
                 }, onPromptDeleteItem = {
                     onPromptDeleteItem(item)
+                },
+                onItemSetHighlight = { state ->
+                    onItemSetHighlight(item, state)
                 }
             )
         }
@@ -121,6 +132,9 @@ fun ShoppingItems(
                             onPromptEditItem(item)
                         }, onPromptDeleteItem = {
                             onPromptDeleteItem(item)
+                        },
+                        onItemSetHighlight = { state ->
+                            onItemSetHighlight(item, state)
                         }
                     )
                 }

@@ -27,4 +27,6 @@
     <string name="completed_count">Teljesített (%1$s)</string>
     <string name="default_list_name">Alapértelmezett</string>
     <string name="entry_deleted">\"%1$s\" törölve</string>
+    <string name="highlight_item">Kiemelés</string>
+    <string name="unhighlight_item">Kiemelés törlése</string>
 </resources>

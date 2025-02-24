@@ -6,6 +6,7 @@ data class ShoppingItem(
     val id: String = ULID.randomULID(),
     val text: String,
     val isChecked: Boolean = false,
+    val isHighlighted: Boolean = false,
     val quantity: Int? = null,
     val unit: String = ""
 )

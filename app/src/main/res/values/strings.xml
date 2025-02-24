@@ -26,4 +26,6 @@
     <string name="completed_count">Completed (%1$s)</string>
     <string name="default_list_name">Default</string>
     <string name="entry_deleted">\"%1$s\" was deleted</string>
+    <string name="highlight_item">Highlight</string>
+    <string name="unhighlight_item">Unhighlight</string>
 </resources>

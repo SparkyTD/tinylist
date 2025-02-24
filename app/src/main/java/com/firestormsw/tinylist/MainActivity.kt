@@ -157,6 +157,9 @@ class MainActivity : ComponentActivity() {
                                     onPromptDeleteItem = { item ->
                                         viewModel.deleteItemById(list.id, item.id)
                                     },
+                                    onItemSetHighlight = { item, state ->
+                                        viewModel.setItemHighlighted(list.id, item.id, state)
+                                    },
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }

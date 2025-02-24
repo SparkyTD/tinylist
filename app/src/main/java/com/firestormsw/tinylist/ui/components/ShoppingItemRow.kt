@@ -1,10 +1,10 @@
 package com.firestormsw.tinylist.ui.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -33,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
@@ -41,12 +41,15 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.firestormsw.tinylist.R
 import com.firestormsw.tinylist.data.ShoppingItem
+import com.firestormsw.tinylist.ui.Heart_minus
+import com.firestormsw.tinylist.ui.Heart_plus
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ShoppingItemRow(
     item: ShoppingItem,
     onItemClick: (String) -> Unit,
+    onItemSetHighlight: (Boolean) -> Unit,
     onPromptDeleteItem: () -> Unit,
     onPromptEditItem: () -> Unit,
     modifier: Modifier = Modifier
@@ -55,6 +58,15 @@ fun ShoppingItemRow(
 
     var showMenu by remember { mutableStateOf(false) }
     var menuOffset by remember { mutableStateOf(DpOffset.Zero) }
+
+    val backgroundColor: Color by animateColorAsState(
+        animationSpec = tween(durationMillis = 300, delayMillis = 0, easing = LinearOutSlowInEasing),
+        targetValue = if (!item.isChecked) {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        }
+    )
 
     Box(
         modifier = modifier
@@ -66,7 +78,7 @@ fun ShoppingItemRow(
         Surface(
             modifier = Modifier.fillMaxSize(),
             shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            color = backgroundColor,
             tonalElevation = 1.dp
         ) {
             Row(
@@ -119,7 +131,7 @@ fun ShoppingItemRow(
                         Spacer(Modifier.width(8.dp))
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.secondaryContainer
+                            color = backgroundColor
                         ) {
                             Text(
                                 text = buildString {
@@ -135,6 +147,16 @@ fun ShoppingItemRow(
                             )
                         }
                     }
+
+                    // Highlighted state
+                    if (item.isHighlighted) {
+                        Spacer(Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                 }
             }
         }
@@ -144,6 +166,35 @@ fun ShoppingItemRow(
             onDismissRequest = { showMenu = false },
             offset = menuOffset,
         ) {
+            DropdownMenuItem(
+                text = {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (!item.isHighlighted) {
+                                Heart_plus
+                            } else {
+                                Heart_minus
+                            },
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            if (!item.isHighlighted) {
+                                stringResource(R.string.highlight_item)
+                            } else {
+                                stringResource(R.string.unhighlight_item)
+                            }
+                        )
+                    }
+                },
+                onClick = {
+                    onItemSetHighlight(!item.isHighlighted)
+                    showMenu = false
+                }
+            )
             DropdownMenuItem(
                 text = {
                     Row(
@@ -174,7 +225,10 @@ fun ShoppingItemRow(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error
                         )
-                        Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+                        Text(
+                            stringResource(R.string.delete),
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 },
                 onClick = {

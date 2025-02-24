@@ -74,9 +74,13 @@ interface ShoppingDao {
         insertItems(items)
     }
 
-    // Item Status Operations
+    // Item Checked Status Operations
     @Query("UPDATE shopping_items SET isChecked = :isChecked WHERE id = :itemId")
     suspend fun updateItemCheckedStatus(itemId: String, isChecked: Boolean)
+
+    // Item Highlight Status Operations
+    @Query("UPDATE shopping_items SET isHighlighted = :isHighlighted WHERE id = :itemId")
+    suspend fun setItemHighlightedStatus(itemId: String, isHighlighted: Boolean)
 
     @Query("UPDATE shopping_items SET quantity = :quantity WHERE id = :itemId")
     suspend fun updateItemQuantity(itemId: String, quantity: Int?)

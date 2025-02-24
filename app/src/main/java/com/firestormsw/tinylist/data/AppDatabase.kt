@@ -10,7 +10,7 @@ import com.firestormsw.tinylist.data.entities.ShoppingListEntity
 
 @Database(
     entities = [ShoppingListEntity::class, ShoppingItemEntity::class],
-    version = 3
+    version = 4
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun shoppingDao(): ShoppingDao
@@ -25,7 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "shopping_app_database"
-                ).fallbackToDestructiveMigration().build()
+                ).build()
                 INSTANCE = instance
                 instance
             }
