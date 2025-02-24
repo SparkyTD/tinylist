@@ -1,7 +1,8 @@
 package com.firestormsw.tinylist.ui.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,7 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
@@ -36,6 +39,7 @@ import com.firestormsw.tinylist.R
 import com.firestormsw.tinylist.data.ShoppingList
 import com.firestormsw.tinylist.ui.Add
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ListSelector(
     lists: List<ShoppingList>,
@@ -49,7 +53,6 @@ fun ListSelector(
     var showMenu by remember { mutableStateOf(false) }
     var targetList by remember { mutableStateOf<ShoppingList?>(null) }
     var menuOffset by remember { mutableStateOf(DpOffset.Zero) }
-    val chipInteractionSource = remember { MutableInteractionSource() }
 
     LazyRow(
         modifier = modifier,
@@ -64,11 +67,14 @@ fun ListSelector(
                 label = "backgroundColor"
             )
             val haptic = LocalHapticFeedback.current
+            val density = LocalDensity.current
+            val chipInteractionSource = remember { MutableInteractionSource() }
+            var horizontalPosition by remember { mutableStateOf(0.dp) }
 
             Box {
                 FilterChip(
                     selected = selected,
-                    onClick = { onListSelected(list.id) },
+                    onClick = { },
                     label = { Text(list.name) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = backgroundColor
@@ -78,20 +84,22 @@ fun ListSelector(
                 Box(
                     modifier = Modifier
                         .matchParentSize()
-                        .pointerInput(Unit) {
-                            detectTapGestures(onLongPress = { offset ->
+                        .onGloballyPositioned { pos -> horizontalPosition = pos.positionInRoot().x.dp }
+                        .combinedClickable(
+                            onLongClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                                 targetList = list
                                 menuOffset = DpOffset(
-                                    offset.x.toDp(),
-                                    offset.y.toDp()
+                                    horizontalPosition.div(density.density),
+                                    0.dp
                                 )
                                 showMenu = true
-                            }, onTap = {
-                                onListSelected(list.id)
-                            })
-                        }
+                            },
+                            onClick = { onListSelected(list.id) },
+                            interactionSource = chipInteractionSource,
+                            indication = null
+                        )
                 )
             }
         }

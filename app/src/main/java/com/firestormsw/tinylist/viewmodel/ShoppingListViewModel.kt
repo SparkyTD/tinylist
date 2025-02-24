@@ -336,6 +336,7 @@ class ShoppingListViewModel(
 
             val currentList = _uiState.value.lists
                 .find { it.id == listId }!!
+            val firstList = _uiState.value.lists.firstOrNull { it.id != listId }
             val itemName = currentList.name
 
             _uiState.update { state ->
@@ -343,7 +344,7 @@ class ShoppingListViewModel(
                     list.id != listId
                 }
                 state.copy(
-                    selectedListId = "",
+                    selectedListId = firstList?.id ?: "",
                     snackbarAction = {
                         val newList = addNewList(itemName)
                         for (item in currentList.items) {
